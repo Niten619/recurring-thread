@@ -17,8 +17,8 @@ pub mod recurring_thread {
     pub fn increment(ctx: Context<Increment>) -> Result<()> {
         msg!("increment invoked!");
         let thread_authority = &ctx.accounts.thread_authority;
-        let thread_id_old = b"old-thread-1";
-        let thread_id_new = b"new-thread-1";
+        let thread_id_old = b"old-thread";
+        let thread_id_new = b"new-thread";
         
         let counter = &mut ctx.accounts.counter;
         counter.counter_value = counter.counter_value.checked_add(1).unwrap();
@@ -194,19 +194,18 @@ pub struct Increment<'info> {
     #[account(mut, seeds = [COUNTER_SEED], bump)]
     pub counter: Account<'info, Counter>,
 
-    // IT RAN AFTER REMOVING THESE TWO
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub payer: SystemAccount<'info>,
     // pub system_program: Program<'info, System>,
 
     #[account(
         mut,
-        address = Thread::pubkey(thread_authority.key(), b"old-thread-1".to_vec()),
+        address = Thread::pubkey(thread_authority.key(), b"old-thread".to_vec()),
     )]
     pub thread: Account<'info, Thread>,
     #[account(
         mut,
-        address = Thread::pubkey(thread_authority.key(), b"new-thread-1".to_vec()),
+        address = Thread::pubkey(thread_authority.key(), b"new-thread".to_vec()),
     )]
     pub thread_new: SystemAccount<'info>,
     #[account(seeds = [THREAD_AUTHORITY_SEED], bump)]
@@ -220,16 +219,16 @@ pub struct Initialize<'info> {
     #[account(init, payer = payer, seeds = [COUNTER_SEED], space = 8 + 8 + 8, bump)]
     pub counter: Account<'info, Counter>,
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub payer: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
     #[account(
         mut,
-        address = Thread::pubkey(thread_authority.key(), b"old-thread-1".to_vec()),
+        address = Thread::pubkey(thread_authority.key(), b"old-thread".to_vec()),
     )]
     pub thread: SystemAccount<'info>,
     #[account(
         mut,
-        address = Thread::pubkey(thread_authority.key(), b"new-thread-1".to_vec()),
+        address = Thread::pubkey(thread_authority.key(), b"new-thread".to_vec()),
     )]
     pub thread_new: SystemAccount<'info>,
     #[account(seeds = [THREAD_AUTHORITY_SEED], bump)]
