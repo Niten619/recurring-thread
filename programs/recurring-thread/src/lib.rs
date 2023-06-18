@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use clockwork_sdk::state::{Thread, ThreadAccount};
+use clockwork_sdk::state::{Thread, ThreadAccount, ThreadResponse, SerializableAccount, SerializableInstruction};
 use anchor_lang::solana_program::{
     instruction::Instruction,
     // native_token::LAMPORTS_PER_SOL
@@ -14,7 +14,7 @@ pub mod recurring_thread {
 
     use super::*;
 
-    pub fn increment(ctx: Context<Increment>) -> Result<()> {
+    pub fn increment(ctx: Context<Increment>) -> Result<ThreadResponse> {
         msg!("increment invoked!");
         let thread_authority = &ctx.accounts.thread_authority;
         let thread_id_old = b"old-thread";
@@ -38,15 +38,15 @@ pub mod recurring_thread {
         // Delete the old thread (created at initialize_thread function) via CPI.
         let bump = *ctx.bumps.get("thread_authority").unwrap();
         msg!("bump: {}", bump);
-        clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
-            clockwork_program.to_account_info(),
-            clockwork_sdk::cpi::ThreadDelete {
-                authority: thread_authority.to_account_info(),
-                close_to: payer.to_account_info(),
-                thread: thread.to_account_info(),
-            },
-            &[&[THREAD_AUTHORITY_SEED, &[bump]]],
-        ))?;
+        // clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
+        //     clockwork_program.to_account_info(),
+        //     clockwork_sdk::cpi::ThreadDelete {
+        //         authority: thread_authority.to_account_info(),
+        //         close_to: payer.to_account_info(),
+        //         thread: thread.to_account_info(),
+        //     },
+        //     &[&[THREAD_AUTHORITY_SEED, &[bump]]],
+        // ))?;
 
         // let inx = Instruction{
         //     program_id: ID,
@@ -65,8 +65,8 @@ pub mod recurring_thread {
         // };
 
         // Defining Trigger for the thread
-        // let current_timestamp = Clock::get()?.unix_timestamp as i64;
-        // msg!("unix: {}", (current_timestamp + 120));
+        let current_timestamp = Clock::get()?.unix_timestamp as i64;
+        msg!("unix: {}", current_timestamp);
         // let trigger = clockwork_sdk::state::Trigger::Timestamp { 
         //     unix_ts: (current_timestamp + 120)  // 2 mins = 120 secs
         // };
@@ -92,7 +92,23 @@ pub mod recurring_thread {
         //     trigger
         // )?;
 
-        Ok(())
+        let trigger_for_response = clockwork_sdk::state::Trigger::Timestamp { 
+            unix_ts: current_timestamp + 30  // 2 mins = 120 secs
+        };
+
+        Ok(ThreadResponse { 
+            close_to: Some(payer.key()),
+            dynamic_instruction: Some(SerializableInstruction{
+                program_id: ID,
+                accounts: vec![SerializableAccount{
+                    pubkey: payer.key(),
+                    is_signer: false,
+                    is_writable: false
+                }],
+                data: vec![5 as u8]
+            }), 
+            trigger: Some(trigger_for_response)
+        })
     }
 
     pub fn initialize_thread(ctx: Context<Initialize>, unix_timestamp: i64) -> Result<()> {
