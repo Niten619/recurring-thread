@@ -29,7 +29,7 @@ pub mod recurring_thread {
         msg!("thread old: {}", thread.key());
         msg!("thread new: {}", thread_new.key());
         
-        let clockwork_program = &ctx.accounts.clockwork_program;
+        // let clockwork_program = &ctx.accounts.clockwork_program;
         let payer = &ctx.accounts.payer;
         // let system_program = &ctx.accounts.system_program;
         msg!("Thread address old: {}", Thread::pubkey(thread_authority.key(), thread_id_old.to_vec()));
