@@ -9,7 +9,7 @@ url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"
-wallet = "/home/nitenl619/.config/solana/id.json"
+wallet = "/home/nick619/.config/solana/id.json"
 
 [scripts]
 thread = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/recurring-thread.ts"
